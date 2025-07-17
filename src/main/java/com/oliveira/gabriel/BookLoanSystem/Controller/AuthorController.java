@@ -40,4 +40,9 @@ public class AuthorController {
         return service.edit(dto);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<AuthorDTO> delete(@PathVariable UUID id){
+        return service.delete(id);
+    }
+
 }

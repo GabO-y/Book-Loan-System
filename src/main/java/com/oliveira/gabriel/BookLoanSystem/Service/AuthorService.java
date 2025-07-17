@@ -7,6 +7,8 @@ import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
 import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +90,19 @@ public class AuthorService {
         }
 
         return ResponseEntity.ok(new AuthorDTO(entity));
+    }
+
+    public ResponseEntity<AuthorDTO> delete(UUID id){
+
+        Optional<Author> opt = repository.findById(id);
+
+        if(opt.isEmpty()) throw new ContentNotFoundException("Author with id:" + id + " could not be found");
+
+        AuthorDTO dto = new AuthorDTO(opt.get());
+
+        repository.deleteById(id);
+
+        return ResponseEntity.ok(dto);
     }
 
 
