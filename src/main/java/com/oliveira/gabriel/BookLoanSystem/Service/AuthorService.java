@@ -5,6 +5,8 @@ import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFound;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +36,19 @@ public class AuthorService {
 
     }
 
+    //Fazendo o getALl de author
+    public ResponseEntity<Page<AuthorDTO>> findAll(Pageable pageable){
+        return ResponseEntity.ok(repository
+            .findAll(pageable)
+            .map(AuthorDTO::new)
+        );
+    }
+
     public ResponseEntity<AuthorDTO> insert(AuthorDTO dto){
         return ResponseEntity.ok(new AuthorDTO(repository.save(dtoToEntity(dto))));
     }
+
+
 
     public Author dtoToEntity(AuthorDTO dto){
 
