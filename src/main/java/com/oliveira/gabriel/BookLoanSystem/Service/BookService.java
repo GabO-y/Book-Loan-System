@@ -1,19 +1,16 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
-import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.BookDTO;
-import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFound;
+import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
 import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,7 +43,7 @@ public class BookService {
 
         Optional<Book> opt = bookRepository.findById(dto.getId());
 
-        if(opt.isEmpty()) throw new ContentNotFound("Book with id: " + dto.getId() + " not found");
+        if(opt.isEmpty()) throw new ContentNotFoundException("Book with id: " + dto.getId() + " not found");
 
         Book book = opt.get();
 
@@ -69,7 +66,7 @@ public class BookService {
 
                 Optional<Author> o = authorRepository.findById(idDto);
 
-                if(o.isEmpty()) throw new ContentNotFound("Author with id: " +  idDto + " not found");
+                if(o.isEmpty()) throw new ContentNotFoundException("Author with id: " +  idDto + " not found");
 
                 book.getAuthor().add(o.get());
 

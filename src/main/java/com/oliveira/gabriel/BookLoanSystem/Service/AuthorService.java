@@ -1,10 +1,12 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
-import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFound;
+import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
+import com.oliveira.gabriel.BookLoanSystem.Erros.BookNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
+import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +21,13 @@ import java.util.UUID;
 public class AuthorService {
 
     private final AuthorRepository repository;
+    private final AuthorRepository authorRepository;
+    private final BookRepository bookRepository;
 
-    public AuthorService(AuthorRepository repository) {
+    public AuthorService(AuthorRepository repository, AuthorRepository authorRepository, BookRepository bookRepository) {
         this.repository = repository;
+        this.authorRepository = authorRepository;
+        this.bookRepository = bookRepository;
     }
 
     public ResponseEntity<AuthorDTO> findById(UUID id){
@@ -29,7 +35,7 @@ public class AuthorService {
         Optional<Author> author = repository.findById(id);
 
         if(author.isEmpty()){
-            throw new ContentNotFound("Author with id: " + id + "could not be found");
+            throw new ContentNotFoundException("Author with id: " + id + "could not be found");
         }
 
         return ResponseEntity.ok(new AuthorDTO(author.get()));
@@ -46,6 +52,42 @@ public class AuthorService {
 
     public ResponseEntity<AuthorDTO> insert(AuthorDTO dto){
         return ResponseEntity.ok(new AuthorDTO(repository.save(dtoToEntity(dto))));
+    }
+
+    public ResponseEntity<AuthorDTO> edit(AuthorDTO dto){
+
+        Optional<Author> opt = repository.findById(dto.getId());
+
+        if(opt.isEmpty()) throw new ContentNotFoundException("Author with id: " + dto.getId() + " could not be found");
+
+        Author entity = opt.get();
+
+        if(dto.getName() != null) entity.setName(dto.getName());
+        if(dto.getDescription() != null) entity.setDescription(dto.getDescription());
+
+        for(var idDto : dto.getBooksId()){
+
+            boolean next = false;
+
+            for(var book : entity.getBooks()){
+
+                if(book.getId() == idDto){
+                    next = true;
+                    break;
+                }
+            }
+
+            if(next) continue;
+
+            Optional<Book> book = bookRepository.findById(idDto);
+
+            if(book.isEmpty()) throw new BookNotFoundException(idDto);
+
+            entity.getBooks().add(book.get());
+
+        }
+
+        return ResponseEntity.ok(new AuthorDTO(entity));
     }
 
 

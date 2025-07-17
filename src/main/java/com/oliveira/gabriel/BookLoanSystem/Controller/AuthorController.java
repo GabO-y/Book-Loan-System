@@ -35,4 +35,9 @@ public class AuthorController {
             return service.findById(id);
     }
 
+    @PatchMapping
+    public ResponseEntity<AuthorDTO> edit(@RequestBody AuthorDTO dto){
+        return service.edit(dto);
+    }
+
 }
