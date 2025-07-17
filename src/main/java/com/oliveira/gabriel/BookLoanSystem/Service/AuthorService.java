@@ -44,7 +44,6 @@ public class AuthorService {
 
     }
 
-    //Fazendo o getALl de author
     public ResponseEntity<Page<AuthorDTO>> findAll(Pageable pageable){
         return ResponseEntity.ok(repository
             .findAll(pageable)
@@ -104,8 +103,6 @@ public class AuthorService {
 
         return ResponseEntity.ok(dto);
     }
-
-
 
     public Author dtoToEntity(AuthorDTO dto){
 
