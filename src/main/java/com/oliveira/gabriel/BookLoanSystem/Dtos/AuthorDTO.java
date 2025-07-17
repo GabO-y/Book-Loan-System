@@ -1,6 +1,7 @@
 package com.oliveira.gabriel.BookLoanSystem.Dtos;
 
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
+import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,15 +17,15 @@ public class AuthorDTO {
     private UUID id;
     private String name;
     private String description;
-    private List<BookDTO> books;
+    private List<UUID> booksId;
 
     public AuthorDTO(Author a){
         id = a.getId();
         name = a.getName();
         description = a.getDescription();
-        books = a.getBooks()
+        booksId = a.getBooks()
             .stream()
-            .map(BookDTO::new)
+            .map(Book::getId)
             .toList();
     }
 

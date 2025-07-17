@@ -20,7 +20,7 @@ public class BookDTO {
     private String title;
     @NotNull
     private String description;
-    private List<AuthorDTO> author;
+    private List<UUID> authorId;
     private String category;
     private String publisher;
     private String owner;
@@ -30,9 +30,9 @@ public class BookDTO {
         id = book.getId();
         title = book.getTitle();
         description = book.getDescription();
-        author = book.getAuthor()
+        authorId = book.getAuthor()
             .stream()
-            .map(AuthorDTO::new)
+            .map(Author::getId)
             .toList();
         publisher = book.getPublisher();
         category = book.getCategory();

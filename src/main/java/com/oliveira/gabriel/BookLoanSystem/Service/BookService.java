@@ -7,6 +7,7 @@ import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
 import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +30,7 @@ public class BookService {
     }
 
     public ResponseEntity<BookDTO> insert(BookDTO dto){
-
-        bookRepository.save(dtoToEntityBook(dto));
-
-        return ResponseEntity.ok(dto);
-
+        return ResponseEntity.ok(new BookDTO(bookRepository.save(dtoToEntity(dto))));
     }
 
     public ResponseEntity<BookDTO> findById(UUID id){
@@ -45,104 +42,48 @@ public class BookService {
             .orElse(ResponseEntity.badRequest().build());
     }
 
-    public ResponseEntity<BookDTO> editAll(BookDTO edit){
+    public ResponseEntity<BookDTO> edit(BookDTO dto){
 
-        Optional<Book> book = bookRepository.findById(edit.getId());
+        Optional<Book> opt = bookRepository.findById(dto.getId());
 
-        if(book.isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
+        if(opt.isEmpty()) throw new ContentNotFound("Book with id: " + dto.getId() + " not found");
 
-        book.get().setTitle(edit.getTitle());
-        book.get().setDescription(edit.getDescription());
+        Book book = opt.get();
 
-        book.get().getAuthor().clear();
+        if(dto.getTitle() != null) book.setTitle(dto.getTitle());
+        if(dto.getDescription() != null) book.setDescription(dto.getDescription());
+        if(dto.getAuthorId() != null) {
 
-        for(var a : edit.getAuthor()){
-
-            Optional<Author> author = authorRepository.findById(a.getId());
-
-            if(author.isEmpty()){
-                throw new ContentNotFound("Author with id: " + a.getId() + " not could be found");
-            }
-
-            book.get().getAuthor().add(author.get());
-
-        }
-
-        book.get().setCategory(edit.getCategory());
-        book.get().setPublisher(edit.getPublisher());
-        book.get().setOwner(edit.getOwner());
-        book.get().setAvailable(edit.getAvailable());
-
-        return ResponseEntity.ok(new BookDTO(bookRepository.save(book.get())));
-
-    }
-
-    public ResponseEntity<BookDTO> edit(BookDTO edit){
-
-        Optional<Book> book = bookRepository.findById(edit.getId());
-
-        //Tem usando essa funcão que fica ate mais facil
-        //Book b = bookRepository.getReferenceById()
-
-        if(book.isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
-
-
-        if(edit.getTitle() != null){
-            book.get().setTitle(edit.getTitle());
-        }
-        if(edit.getDescription() != null){
-            book.get().setDescription(edit.getDescription());
-        }
-        if(edit.getAuthor() != null){
-
-            List<AuthorDTO> authors = edit.getAuthor();
-
-            for(var a : edit.getAuthor()){
-
-                Optional<Author> author = authorRepository.findById(a.getId());
-
-                if(author.isEmpty()){
-                    throw new ContentNotFound("Author with id: " + a.getId() + " not could be found");
-                }
+            for(var idDto : dto.getAuthorId()){
 
                 boolean next = false;
 
-                for(var aut : book.get().getAuthor()){
-
-                    if(aut.getId() == a.getId()){
+                for(var author : book.getAuthor()){
+                    if(author.getId() == idDto){
                         next = true;
                         break;
                     }
-
                 }
 
-                if(next){
-                    continue;
-                }
+                if(next) continue;
 
-                book.get().getAuthor().add(dtoToEntityAuthor(a));
+                Optional<Author> o = authorRepository.findById(idDto);
+
+                if(o.isEmpty()) throw new ContentNotFound("Author with id: " +  idDto + " not found");
+
+                book.getAuthor().add(o.get());
+
             }
 
+        }
+        if(dto.getCategory() != null) book.setCategory(dto.getCategory());
+        if(dto.getPublisher() != null) book.setPublisher(dto.getPublisher());
+        if(dto.getAvailable() != null) book.setAvailable(dto.getAvailable());
+        if(dto.getOwner() != null) book.setOwner(dto.getOwner());
 
-        }
-        if(edit.getPublisher() != null){
-            book.get().setPublisher(edit.getPublisher());
-        }
-        if(edit.getCategory() != null){
-            book.get().setCategory(edit.getCategory());
-        }
-        if(edit.getAvailable() != null){
-            book.get().setAvailable(edit.getAvailable());
-        }
-        if(edit.getOwner() != null){
-            book.get().setOwner(edit.getOwner());
-        }
+        bookRepository.save(book);
 
-        return ResponseEntity.ok(new BookDTO(bookRepository.save(book.get())));
+        return ResponseEntity.ok(new BookDTO(book));
 
     }
 
@@ -167,17 +108,13 @@ public class BookService {
 
     }
 
-
-    public Book dtoToEntityBook(BookDTO dto){
+    public Book dtoToEntity(BookDTO dto){
 
         Book entity = new Book();
 
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
 
-        for(var a : dto.getAuthor()){
-            entity.getAuthor().add(dtoToEntityAuthor(a));
-        }
 
         entity.setPublisher(dto.getPublisher());
         entity.setCategory(dto.getCategory());
@@ -187,19 +124,6 @@ public class BookService {
 
     }
 
-    public Author dtoToEntityAuthor(AuthorDTO dto){
 
-        Author entity = new Author();
-
-        entity.setName(dto.getName());
-        entity.setDescription(dto.getDescription());
-
-        for(var i : dto.getBooks()){
-            entity.getBooks().add(dtoToEntityBook(i));
-        }
-
-        return entity;
-
-    }
 
 }

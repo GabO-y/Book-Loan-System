@@ -35,11 +35,6 @@ public class BookController {
         return service.getAll(pageable);
     }
 
-    @PutMapping
-    public ResponseEntity<BookDTO> editAll(@RequestBody BookDTO dto){
-        return service.editAll(dto);
-    }
-
     @PatchMapping
     public ResponseEntity<BookDTO> edit(@RequestBody BookDTO dto){
         return service.edit(dto);
