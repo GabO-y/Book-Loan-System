@@ -1,12 +1,14 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
+import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFound;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,12 +18,8 @@ public class AuthorService {
 
     private final AuthorRepository repository;
 
-    private final BookService bookService;
-
-
-    public AuthorService(AuthorRepository repository, BookService bookService) {
+    public AuthorService(AuthorRepository repository) {
         this.repository = repository;
-        this.bookService = bookService;
     }
 
     public ResponseEntity<AuthorDTO> findById(UUID id){
@@ -29,7 +27,7 @@ public class AuthorService {
         Optional<Author> author = repository.findById(id);
 
         if(author.isEmpty()){
-            return ResponseEntity.notFound().build();
+            throw new ContentNotFound("Author with id: " + id + "could not be found");
         }
 
         return ResponseEntity.ok(new AuthorDTO(author.get()));
@@ -50,6 +48,8 @@ public class AuthorService {
         if(dto.getBooksId() == null || dto.getBooksId().isEmpty()) {
             entity.setBooks(List.of());
         }else{
+
+            entity.setBooks(new ArrayList<>());
 
             for(var i : dto.getBooksId()){
 

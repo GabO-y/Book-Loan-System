@@ -25,4 +25,8 @@ public class Author {
     )
     private List<Book> books;
 
+    public Author(){
+        books = List.of();
+    }
+
 }
