@@ -1,19 +1,21 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.BookDTO;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.OwnerResponse;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTO;
 import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
 import com.oliveira.gabriel.BookLoanSystem.Models.Category;
 import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
-import com.oliveira.gabriel.BookLoanSystem.Repository.AuthorRepository;
-import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
-import com.oliveira.gabriel.BookLoanSystem.Repository.CategoryRepository;
-import com.oliveira.gabriel.BookLoanSystem.Repository.PublisherRepository;
+import com.oliveira.gabriel.BookLoanSystem.Repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.print.attribute.standard.JobKOctets;
 import java.sql.Array;
@@ -30,16 +32,23 @@ public class BookService {
     private final AuthorRepository authorRepository;
     private final CategoryRepository categoryRepository;
     private final PublisherRepository publisherRepository;
+    private final UserRepository userRepository;
 
-    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, CategoryRepository categoryRepository, PublisherRepository publisherRepository) {
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, CategoryRepository categoryRepository, PublisherRepository publisherRepository, UserRepository userRepository) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.categoryRepository = categoryRepository;
         this.publisherRepository = publisherRepository;
+        this.userRepository = userRepository;
     }
 
-    public ResponseEntity<BookDTO> insert(BookDTO dto){
-        return ResponseEntity.ok(new BookDTO(bookRepository.save(dtoToEntity(dto))));
+    public ResponseEntity<BookDTO> insert(BookDTO dto, JwtAuthenticationToken token){
+
+        var user = userRepository.findById(UUID.fromString(token.getName()));
+
+        dto.setOwner(new OwnerResponse(user.get()));
+
+        return ResponseEntity.ok(new BookDTO(bookRepository.save(dtoToEntity(dto, token))));
     }
 
     public ResponseEntity<BookDTO> findById(UUID id){
@@ -52,7 +61,7 @@ public class BookService {
 
     }
 
-    public ResponseEntity<BookDTO> edit(BookDTO dto){
+    public ResponseEntity<BookDTO> edit(BookDTO dto, JwtAuthenticationToken token){
 
         Optional<Book> opt = bookRepository.findById(dto.getId());
 
@@ -139,7 +148,7 @@ public class BookService {
         }
 
         if(dto.getAvailable() != null) book.setAvailable(dto.getAvailable());
-        if(dto.getOwner() != null) book.setOwner(dto.getOwner());
+        if(dto.getOwner() != null) book.setOwner(userRepository.findById(UUID.fromString(token.getName())).get());
 
         bookRepository.save(book);
 
@@ -154,7 +163,7 @@ public class BookService {
         );
     }
 
-    public ResponseEntity<BookDTO> delete(UUID id){
+    public ResponseEntity<Void> delete(UUID id, JwtAuthenticationToken token){
 
         Optional<Book> book = bookRepository.findById(id);
 
@@ -162,28 +171,40 @@ public class BookService {
             return ResponseEntity.noContent().build();
         }
 
+        var user = userRepository.findById(UUID.fromString(token.getName())).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
+        );
+
+
+        if(user.getId() != book.get().getOwner().getId()){
+            if(userRepository.findByUsername("admin").get().getId() != user.getId()){
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "this book not belong to you");
+            }
+        }
+
+
         bookRepository.deleteById(id);
 
-        return ResponseEntity.ok(new BookDTO(book.get()));
+        return ResponseEntity.ok().build();
 
     }
 
-    public Book dtoToEntity(BookDTO dto){
+    private Book dtoToEntity(BookDTO dto, JwtAuthenticationToken token){
 
         Book entity = new Book();
 
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
 
-        List<UUID> a = dto.getAuthorId();
-        List<UUID> c = dto.getCategoryId();
-        List<UUID> p = dto.getPublisherId();
+        List<UUID> a = new ArrayList<>(dto.getAuthorId());
+        List<UUID> c = new ArrayList<>(dto.getCategoryId());
+        List<UUID> p = new ArrayList<>(dto.getPublisherId());
 
         Optional<?> opt;
 
         List<Object> objs = new ArrayList<>();
 
-        if(a != null && !a.isEmpty()){
+        if(!a.isEmpty()){
 
             entity.setAuthor(new ArrayList<>());
 
@@ -205,7 +226,7 @@ public class BookService {
 
         objs.clear();
 
-        if(c != null && !c.isEmpty()){
+        if(!c.isEmpty()){
 
             entity.setCategory(new ArrayList<>());
 
@@ -227,7 +248,7 @@ public class BookService {
 
         objs.clear();
 
-        if(p != null && !p.isEmpty()){
+        if(!p.isEmpty()){
 
             entity.setPublisher(new ArrayList<>());
 
@@ -248,7 +269,7 @@ public class BookService {
         }
 
 
-        entity.setOwner(dto.getOwner());
+        entity.setOwner(userRepository.findById(UUID.fromString(token.getName())).get());
 
         return entity;
 

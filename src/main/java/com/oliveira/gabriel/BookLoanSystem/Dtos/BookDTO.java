@@ -26,7 +26,7 @@ public class BookDTO {
     private List<UUID> authorId;
     private List<UUID> categoryId;
     private List<UUID> publisherId;
-    private String owner;
+    private OwnerResponse owner;
     private Boolean available;
 
     public BookDTO(Book book){
@@ -35,20 +35,35 @@ public class BookDTO {
         description = book.getDescription();
 
         authorId = new ArrayList<>();
+        categoryId = new ArrayList<>();
+        publisherId = new ArrayList<>();
+
+        if(book.getAuthor() == null){
+            book.setAuthor(new ArrayList<>());
+        }
+
+        if(book.getPublisher() == null){
+            book.setPublisher(new ArrayList<>());
+        }
+
+        if(book.getCategory() == null){
+            book.setCategory(new ArrayList<>());
+        }
 
         for(var a : book.getAuthor()){
             authorId.add(a.getId());
         }
 
-        categoryId = book.getCategory()
-            .stream()
-            .map(Category::getId)
-            .toList();
-        publisherId = book.getPublisher()
-            .stream()
-            .map(Publisher::getId)
-            .toList();
-        owner = book.getOwner();
+        for(var p : book.getPublisher()){
+            publisherId.add(p.getId());
+        }
+
+        for(var c : book.getCategory()){
+            categoryId.add(c.getId());
+        }
+
+
+        owner = new OwnerResponse(book.getOwner());
         available = book.getAvailable();
     }
 

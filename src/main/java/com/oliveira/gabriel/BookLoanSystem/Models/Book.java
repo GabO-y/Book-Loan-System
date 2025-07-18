@@ -38,7 +38,9 @@ public class Book {
         inverseJoinColumns = @JoinColumn(name = "publisher_id")
     )
     private List<Publisher> publisher;
-    private String owner;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
     private Boolean available;
     private LocalDateTime timePost;
 
