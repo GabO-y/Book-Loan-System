@@ -45,6 +45,19 @@ public class PublisherService {
 
     }
 
+    public ResponseEntity<PublisherDTO> delete(UUID id){
+
+        Optional<Publisher> opt = repository.findById(id);
+
+        if(opt.isEmpty()) throw new ContentNotFoundException("Publisher with id:" + id + " could not be found");
+
+        PublisherDTO dto = new PublisherDTO(opt.get());
+
+        repository.deleteById(id);
+
+        return ResponseEntity.ok(dto);
+    }
+
     private Publisher dtoToEntity(PublisherDTO dto){
 
         Publisher entity = new Publisher();

@@ -37,4 +37,9 @@ public class PublisherController {
         return service.findById(id);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<PublisherDTO> delete(@PathVariable UUID id){
+        return service.delete(id);
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
+import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
 import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
@@ -46,6 +47,19 @@ public class CategoryService {
 
         return ResponseEntity.ok(new CategoryDTO(opt.get()));
 
+    }
+
+    public ResponseEntity<CategoryDTO> delete(UUID id){
+
+        Optional<Category> opt = repository.findById(id);
+
+        if(opt.isEmpty()) throw new ContentNotFoundException("Category with id:" + id + " could not be found");
+
+        CategoryDTO dto = new CategoryDTO(opt.get());
+
+        repository.deleteById(id);
+
+        return ResponseEntity.ok(dto);
     }
 
     private Category dtoToEntity(CategoryDTO dto){

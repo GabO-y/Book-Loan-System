@@ -1,5 +1,6 @@
 package com.oliveira.gabriel.BookLoanSystem.Controller;
 
+import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
 import com.oliveira.gabriel.BookLoanSystem.Models.Category;
 import com.oliveira.gabriel.BookLoanSystem.Service.CategoryService;
@@ -33,6 +34,11 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> findById(@PathVariable UUID id){
         return service.findById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CategoryDTO> delete(@PathVariable UUID id){
+        return service.delete(id);
     }
 
 }
