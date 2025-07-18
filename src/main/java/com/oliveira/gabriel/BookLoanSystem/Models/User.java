@@ -4,17 +4,17 @@ package com.oliveira.gabriel.BookLoanSystem.Models;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.LoginRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.service.annotation.GetExchange;
 
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tb_users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {

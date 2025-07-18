@@ -2,14 +2,19 @@ package com.oliveira.gabriel.BookLoanSystem.Models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ManyToAny;
 
+import java.awt.event.ItemListener;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Data
+@Getter
+@Setter
 public class Book {
 
     @Id
@@ -43,6 +48,9 @@ public class Book {
     private User owner;
     private Boolean available;
     private LocalDateTime timePost;
+
+    @OneToOne
+    private Loan loanJoin;
 
     public Book(){
         available = true;

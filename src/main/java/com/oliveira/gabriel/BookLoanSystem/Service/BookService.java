@@ -4,10 +4,7 @@ import com.oliveira.gabriel.BookLoanSystem.Dtos.BookDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.OwnerResponse;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTO;
 import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
-import com.oliveira.gabriel.BookLoanSystem.Models.Author;
-import com.oliveira.gabriel.BookLoanSystem.Models.Book;
-import com.oliveira.gabriel.BookLoanSystem.Models.Category;
-import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
+import com.oliveira.gabriel.BookLoanSystem.Models.*;
 import com.oliveira.gabriel.BookLoanSystem.Repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,13 +30,15 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final PublisherRepository publisherRepository;
     private final UserRepository userRepository;
+    private final LoanItemRepository loanItemRepository;
 
-    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, CategoryRepository categoryRepository, PublisherRepository publisherRepository, UserRepository userRepository) {
+    public BookService(BookRepository bookRepository, AuthorRepository authorRepository, CategoryRepository categoryRepository, PublisherRepository publisherRepository, UserRepository userRepository, LoanItemRepository loanRepository) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
         this.categoryRepository = categoryRepository;
         this.publisherRepository = publisherRepository;
         this.userRepository = userRepository;
+        this.loanItemRepository = loanRepository;
     }
 
     public ResponseEntity<BookDTO> insert(BookDTO dto, JwtAuthenticationToken token){
@@ -163,30 +162,34 @@ public class BookService {
         );
     }
 
-    public ResponseEntity<Void> delete(UUID id, JwtAuthenticationToken token){
+    public ResponseEntity<Void> delete(UUID id, JwtAuthenticationToken token) {
 
-        Optional<Book> book = bookRepository.findById(id);
+        Book book = bookRepository.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "book with id: " + id + " could not be found")
+        );
 
-        if(book.isEmpty()){
-            return ResponseEntity.noContent().build();
+        if (!book.getAvailable()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "this book is in a loan, please, end the loan first");
         }
 
         var user = userRepository.findById(UUID.fromString(token.getName())).orElseThrow(
             () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found")
         );
 
+        UUID ownerId = book.getOwner().getId();
+        UUID userId = user.getId();
+        UUID adminId = userRepository.findByUsername("admin").orElseThrow().getId();
 
-        if(user.getId() != book.get().getOwner().getId()){
-            if(userRepository.findByUsername("admin").get().getId() != user.getId()){
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "this book not belong to you");
-            }
+        if (!userId.equals(ownerId) && !userId.equals(adminId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "this book does not belong to you");
         }
 
+        List<LoanItem> loanItems = loanItemRepository.findAllByBook(book).orElseThrow();
+        loanItemRepository.deleteAll(loanItems);
 
         bookRepository.deleteById(id);
 
         return ResponseEntity.ok().build();
-
     }
 
     private Book dtoToEntity(BookDTO dto, JwtAuthenticationToken token){
@@ -196,9 +199,22 @@ public class BookService {
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
 
-        List<UUID> a = new ArrayList<>(dto.getAuthorId());
-        List<UUID> c = new ArrayList<>(dto.getCategoryId());
-        List<UUID> p = new ArrayList<>(dto.getPublisherId());
+        List<UUID> a = new ArrayList<>();
+        List<UUID> c = new ArrayList<>();
+        List<UUID> p = new ArrayList<>();
+
+        if(dto.getAuthorId() != null){
+            a = dto.getAuthorId();
+        }
+
+        if(dto.getCategoryId() != null){
+            c = dto.getCategoryId();
+        }
+
+        if(dto.getPublisherId() != null){
+            p = dto.getPublisherId();
+        }
+
 
         Optional<?> opt;
 
@@ -274,7 +290,5 @@ public class BookService {
         return entity;
 
     }
-
-
 
 }
