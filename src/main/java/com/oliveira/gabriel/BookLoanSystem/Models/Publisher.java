@@ -20,7 +20,7 @@ public class Publisher {
     private UUID id;
     private String name;
     private String description;
-    @ManyToMany
+    @ManyToMany(mappedBy = "publisher")
     private List<Book> books;
 
 }

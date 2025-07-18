@@ -1,9 +1,8 @@
 package com.oliveira.gabriel.BookLoanSystem.Controller;
 
 
-import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.PublisherDTO;
-import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
 import com.oliveira.gabriel.BookLoanSystem.Service.PublisherService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +34,11 @@ public class PublisherController {
     @GetMapping("/{id}")
     public ResponseEntity<PublisherDTO> findById(@PathVariable UUID id){
         return service.findById(id);
+    }
+
+    @PatchMapping
+    public ResponseEntity<PublisherDTO> edit(@RequestBody PublisherDTO dto){
+        return service.edit(dto);
     }
 
     @DeleteMapping("/{id}")

@@ -19,7 +19,7 @@ public class Category {
     private UUID id;
     private String name;
     private String description;
-    @ManyToMany
+    @ManyToMany(mappedBy = "category")
     private List<Book> books;
 
 }

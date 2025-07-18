@@ -2,11 +2,14 @@ package com.oliveira.gabriel.BookLoanSystem.Dtos;
 
 import com.oliveira.gabriel.BookLoanSystem.Models.Author;
 import com.oliveira.gabriel.BookLoanSystem.Models.Book;
+import com.oliveira.gabriel.BookLoanSystem.Models.Category;
+import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +24,8 @@ public class BookDTO {
     @NotNull
     private String description;
     private List<UUID> authorId;
-    private String category;
-    private String publisher;
+    private List<UUID> categoryId;
+    private List<UUID> publisherId;
     private String owner;
     private Boolean available;
 
@@ -30,12 +33,21 @@ public class BookDTO {
         id = book.getId();
         title = book.getTitle();
         description = book.getDescription();
-        authorId = book.getAuthor()
+
+        authorId = new ArrayList<>();
+
+        for(var a : book.getAuthor()){
+            authorId.add(a.getId());
+        }
+
+        categoryId = book.getCategory()
             .stream()
-            .map(Author::getId)
+            .map(Category::getId)
             .toList();
-        publisher = book.getPublisher();
-        category = book.getCategory();
+        publisherId = book.getPublisher()
+            .stream()
+            .map(Publisher::getId)
+            .toList();
         owner = book.getOwner();
         available = book.getAvailable();
     }

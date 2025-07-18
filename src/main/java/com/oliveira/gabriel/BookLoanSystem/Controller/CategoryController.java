@@ -2,6 +2,7 @@ package com.oliveira.gabriel.BookLoanSystem.Controller;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.AuthorDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.PublisherDTO;
 import com.oliveira.gabriel.BookLoanSystem.Models.Category;
 import com.oliveira.gabriel.BookLoanSystem.Service.CategoryService;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,11 @@ public class CategoryController {
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> findById(@PathVariable UUID id){
         return service.findById(id);
+    }
+
+    @PatchMapping
+    public ResponseEntity<CategoryDTO> edit(@RequestBody CategoryDTO dto){
+        return service.edit(dto);
     }
 
     @DeleteMapping("/{id}")

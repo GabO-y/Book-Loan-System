@@ -85,6 +85,10 @@ public class AuthorService {
 
         }
 
+        if(dto.getBooksId().isEmpty()){
+            entity.setBooks(new ArrayList<>());
+        }
+
         return ResponseEntity.ok(new AuthorDTO(entity));
     }
 
