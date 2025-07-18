@@ -3,11 +3,12 @@ package com.oliveira.gabriel.BookLoanSystem.Controller;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
 import com.oliveira.gabriel.BookLoanSystem.Models.Category;
 import com.oliveira.gabriel.BookLoanSystem.Service.CategoryService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/categories")
@@ -23,4 +24,15 @@ public class CategoryController {
     public ResponseEntity<CategoryDTO> insert(@RequestBody CategoryDTO dto){
         return service.insert(dto);
     }
+
+    @GetMapping
+    public ResponseEntity<Page<CategoryDTO>> findAll(Pageable pageable){
+        return service.findAll(pageable);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDTO> findById(@PathVariable UUID id){
+        return service.findById(id);
+    }
+
 }

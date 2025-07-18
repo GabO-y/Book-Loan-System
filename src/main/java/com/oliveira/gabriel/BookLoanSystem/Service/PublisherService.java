@@ -2,12 +2,18 @@ package com.oliveira.gabriel.BookLoanSystem.Service;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.PublisherDTO;
+import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.Category;
 import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
 import com.oliveira.gabriel.BookLoanSystem.Repository.PublisherRepository;
 import com.oliveira.gabriel.BookLoanSystem.Utils.UtilsEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class PublisherService {
@@ -20,6 +26,23 @@ public class PublisherService {
 
     public ResponseEntity<PublisherDTO> insert(PublisherDTO dto){
         return ResponseEntity.ok(new PublisherDTO(repository.save(dtoToEntity(dto))));
+    }
+
+    public ResponseEntity<Page<PublisherDTO>> findAll(Pageable pageable){
+        return ResponseEntity.ok(repository
+            .findAll(pageable)
+            .map(PublisherDTO::new)
+        );
+    }
+
+    public ResponseEntity<PublisherDTO> findById(UUID id){
+
+        Optional<Publisher> opt = repository.findById(id);
+
+        if(opt.isEmpty()) throw new ContentNotFoundException("Publisher with id: " + id + " could not be found");
+
+        return ResponseEntity.ok(new PublisherDTO(opt.get()));
+
     }
 
     private Publisher dtoToEntity(PublisherDTO dto){

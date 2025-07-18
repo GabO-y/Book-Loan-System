@@ -36,12 +36,9 @@ public class AuthorService {
 
         Optional<Author> author = repository.findById(id);
 
-        if(author.isEmpty()){
-            throw new ContentNotFoundException("Author with id: " + id + "could not be found");
-        }
+        if(author.isEmpty()) throw new ContentNotFoundException("Author with id: " + id + "could not be found");
 
         return ResponseEntity.ok(new AuthorDTO(author.get()));
-
     }
 
     public ResponseEntity<Page<AuthorDTO>> findAll(Pageable pageable){
