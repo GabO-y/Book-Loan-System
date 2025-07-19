@@ -2,7 +2,6 @@ package com.oliveira.gabriel.BookLoanSystem.Service;
 
 import com.oliveira.gabriel.BookLoanSystem.Dtos.BookDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.OwnerResponse;
-import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTO;
 import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Models.*;
 import com.oliveira.gabriel.BookLoanSystem.Repository.*;

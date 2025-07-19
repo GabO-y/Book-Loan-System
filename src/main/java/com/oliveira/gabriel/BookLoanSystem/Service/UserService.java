@@ -1,6 +1,7 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
-import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTO;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTOResponseAdmin;
+import com.oliveira.gabriel.BookLoanSystem.Dtos.UserResponse;
 import com.oliveira.gabriel.BookLoanSystem.Models.Role;
 import com.oliveira.gabriel.BookLoanSystem.Models.User;
 import com.oliveira.gabriel.BookLoanSystem.Repository.RoleRepository;
@@ -16,6 +17,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -31,7 +33,7 @@ public class UserService {
     }
 
     @Transactional
-    public ResponseEntity<Void> createUser(UserDTO dto){
+    public ResponseEntity<Void> createUser(UserDTOResponseAdmin dto){
 
         var user = userRepository.findByUsername(dto.username());
 
@@ -50,9 +52,15 @@ public class UserService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<Page<UserDTO>> listUsers(Pageable pageable){
+    public ResponseEntity<UserResponse> findById(UUID id){
+        return ResponseEntity.ok(new UserResponse(userRepository.findById(id).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        )));
+    }
+
+    public ResponseEntity<Page<UserDTOResponseAdmin>> listUsers(Pageable pageable){
         return ResponseEntity.ok(userRepository.findAll(pageable)
-            .map(UserDTO::new));
+            .map(UserDTOResponseAdmin::new));
     }
 
 }

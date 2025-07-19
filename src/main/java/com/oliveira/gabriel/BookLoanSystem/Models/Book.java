@@ -1,5 +1,7 @@
 package com.oliveira.gabriel.BookLoanSystem.Models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -50,6 +52,7 @@ public class Book {
     private LocalDateTime timePost;
 
     @OneToOne
+    @JsonIgnore
     private Loan loanJoin;
 
     public Book(){

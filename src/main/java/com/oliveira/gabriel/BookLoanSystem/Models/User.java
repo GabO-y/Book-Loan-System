@@ -38,6 +38,9 @@ public class User {
     @OneToMany(mappedBy = "owner")
     private Set<Book> books;
 
+    @OneToMany(mappedBy = "borrower")
+    private Set<Loan> loans;
+
     public boolean isLoginCorrect(LoginRequest request, PasswordEncoder encoder){
         return encoder.matches(request.password(), this.password);
     }

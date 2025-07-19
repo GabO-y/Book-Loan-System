@@ -1,5 +1,6 @@
 package com.oliveira.gabriel.BookLoanSystem.Models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +25,8 @@ public class Loan {
     private Instant createAt;
     private Instant endAt;
     private Boolean finalized;
-    @ManyToOne
+
+    @ManyToOne()
     private User borrower;
 
     public void removeItem(Book book){

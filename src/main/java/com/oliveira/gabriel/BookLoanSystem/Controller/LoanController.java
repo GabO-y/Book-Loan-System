@@ -8,6 +8,7 @@ import lombok.Getter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,8 +38,14 @@ public class LoanController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('SCOPE_admin')")
     public ResponseEntity<Page<LoanResponse>> findAll(Pageable pageable){
         return service.findAll(pageable);
+    }
+
+    @GetMapping("/myLoans")
+    public ResponseEntity<List<LoanResponse>> viewMyLoans(JwtAuthenticationToken token){
+        return service.viewMyLoans(token);
     }
 
 }

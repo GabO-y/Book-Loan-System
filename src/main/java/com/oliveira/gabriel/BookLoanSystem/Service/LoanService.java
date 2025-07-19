@@ -23,8 +23,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class LoanService {
@@ -32,13 +34,11 @@ public class LoanService {
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final BookService bookService;
 
-    public LoanService(LoanRepository loanRepository, BookRepository bookRepository, UserRepository userRepository, BookService bookService) {
+    public LoanService(LoanRepository loanRepository, BookRepository bookRepository, UserRepository userRepository) {
         this.loanRepository = loanRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
-        this.bookService = bookService;
     }
 
     public ResponseEntity<LoanResponse> makeLoan(LoanRequest request, JwtAuthenticationToken token){
@@ -75,7 +75,6 @@ public class LoanService {
         return ResponseEntity.ok(new LoanResponse(loan, "make a loan"));
     }
 
-
     public ResponseEntity<LoanResponse> returnLoan(UUID id, JwtAuthenticationToken token){
 
         Loan loan = loanRepository.findById(id).orElseThrow(
@@ -102,6 +101,19 @@ public class LoanService {
         }
 
         return ResponseEntity.ok(new LoanResponse(loan, "end a loan"));
+
+    }
+
+    public ResponseEntity<List<LoanResponse>> viewMyLoans(JwtAuthenticationToken token){
+
+        User user = userRepository.findById(UUID.fromString(token.getName())).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+
+        return ResponseEntity.ok(loanRepository.findAll().stream()
+            .filter(l -> l.getBorrower().equals(user))
+            .map(l -> new LoanResponse(l, "get your own"))
+            .toList());
 
     }
 
