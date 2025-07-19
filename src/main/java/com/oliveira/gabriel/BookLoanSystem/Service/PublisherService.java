@@ -108,7 +108,11 @@ public class PublisherService {
 
         PublisherDTO dto = new PublisherDTO(opt.get());
 
-        repository.deleteById(id);
+        try{
+            repository.deleteById(id);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
 
         return ResponseEntity.ok(dto);
     }

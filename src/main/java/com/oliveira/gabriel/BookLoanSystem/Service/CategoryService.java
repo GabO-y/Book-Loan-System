@@ -13,8 +13,10 @@ import com.oliveira.gabriel.BookLoanSystem.Repository.CategoryRepository;
 import com.oliveira.gabriel.BookLoanSystem.Utils.UtilsEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.smartcardio.TerminalFactorySpi;
 import java.util.ArrayList;
@@ -110,7 +112,11 @@ public class CategoryService {
 
         CategoryDTO dto = new CategoryDTO(opt.get());
 
-        repository.deleteById(id);
+        try{
+            repository.deleteById(id);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
 
         return ResponseEntity.ok(dto);
     }

@@ -67,6 +67,14 @@ public class BookService {
 
         Book book = opt.get();
 
+        User user = userRepository.findById(UUID.fromString(token.getName())).orElseThrow();
+
+        if(!book.getOwner().equals(user)) {
+            if(!userRepository.findByUsername("admin").get().equals(user)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+        }
+
         if(dto.getTitle() != null) book.setTitle(dto.getTitle());
         if(dto.getDescription() != null) book.setDescription(dto.getDescription());
 
@@ -91,6 +99,11 @@ public class BookService {
 
                 book.getAuthor().add(o.get());
 
+            }
+
+
+            if(dto.getAuthorId().isEmpty()){
+                book.setAuthor(new ArrayList<>());
             }
 
         }
@@ -118,6 +131,10 @@ public class BookService {
 
             }
 
+            if(dto.getCategoryId().isEmpty()){
+                book.setCategory(new ArrayList<>());
+            }
+
         }
 
         if(dto.getPublisherId() != null) {
@@ -141,6 +158,11 @@ public class BookService {
 
                 book.getPublisher().add(o.get());
 
+            }
+
+
+            if(dto.getPublisherId().isEmpty()){
+                book.setPublisher(new ArrayList<>());
             }
 
         }

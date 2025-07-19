@@ -11,9 +11,13 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -103,7 +107,12 @@ public class AuthorService {
 
         AuthorDTO dto = new AuthorDTO(opt.get());
 
-        repository.deleteById(id);
+        try{
+            repository.deleteById(id);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
+
 
         return ResponseEntity.ok(dto);
     }
