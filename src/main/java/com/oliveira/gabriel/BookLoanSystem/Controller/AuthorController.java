@@ -6,6 +6,7 @@ import com.oliveira.gabriel.BookLoanSystem.Service.AuthorService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class AuthorController {
     }
 
     @PatchMapping
+    @PreAuthorize("hasAnyAuthority('SCOPE_admin')")
     public ResponseEntity<AuthorDTO> edit(@RequestBody AuthorDTO dto){
         return service.edit(dto);
     }

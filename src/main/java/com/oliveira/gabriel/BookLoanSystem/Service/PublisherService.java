@@ -5,17 +5,18 @@ import com.oliveira.gabriel.BookLoanSystem.Dtos.CategoryDTO;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.PublisherDTO;
 import com.oliveira.gabriel.BookLoanSystem.Erros.BookNotFoundException;
 import com.oliveira.gabriel.BookLoanSystem.Erros.ContentNotFoundException;
-import com.oliveira.gabriel.BookLoanSystem.Models.Author;
-import com.oliveira.gabriel.BookLoanSystem.Models.Book;
-import com.oliveira.gabriel.BookLoanSystem.Models.Category;
-import com.oliveira.gabriel.BookLoanSystem.Models.Publisher;
+import com.oliveira.gabriel.BookLoanSystem.Models.*;
 import com.oliveira.gabriel.BookLoanSystem.Repository.BookRepository;
 import com.oliveira.gabriel.BookLoanSystem.Repository.PublisherRepository;
+import com.oliveira.gabriel.BookLoanSystem.Repository.UserRepository;
 import com.oliveira.gabriel.BookLoanSystem.Utils.UtilsEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -26,10 +27,12 @@ public class PublisherService {
 
     private final PublisherRepository repository;
     private final BookRepository bookRepository;
+    private final UserRepository userRepository;
 
-    public PublisherService(PublisherRepository repository, BookRepository bookRepository) {
+    public PublisherService(PublisherRepository repository, BookRepository bookRepository, UserRepository userRepository) {
         this.repository = repository;
         this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
     }
 
     public ResponseEntity<PublisherDTO> insert(PublisherDTO dto){
@@ -64,30 +67,34 @@ public class PublisherService {
         if(dto.getName() != null) entity.setName(dto.getName());
         if(dto.getDescription() != null) entity.setDescription(dto.getDescription());
 
-        for(var idDto : dto.getBooksId()){
+        if(dto.getBooksId() != null){
 
-            boolean next = false;
+            for(var idDto : dto.getBooksId()){
 
-            for(var book : entity.getBooks()){
+                boolean next = false;
 
-                if(book.getId() == idDto){
-                    next = true;
-                    break;
+                for(var book : entity.getBooks()){
+
+                    if(book.getId() == idDto){
+                        next = true;
+                        break;
+                    }
                 }
+
+                if(next) continue;
+
+                Optional<Book> book = bookRepository.findById(idDto);
+
+                if(book.isEmpty()) throw new BookNotFoundException(idDto);
+
+                entity.getBooks().add(book.get());
+
             }
 
-            if(next) continue;
+            if(dto.getBooksId().isEmpty()){
+                entity.setBooks(new ArrayList<>());
+            }
 
-            Optional<Book> book = bookRepository.findById(idDto);
-
-            if(book.isEmpty()) throw new BookNotFoundException(idDto);
-
-            entity.getBooks().add(book.get());
-
-        }
-
-        if(dto.getBooksId().isEmpty()){
-            entity.setBooks(new ArrayList<>());
         }
 
         return ResponseEntity.ok(new PublisherDTO(entity));

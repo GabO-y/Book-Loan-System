@@ -62,31 +62,34 @@ public class AuthorService {
 
         if(dto.getName() != null) entity.setName(dto.getName());
         if(dto.getDescription() != null) entity.setDescription(dto.getDescription());
+        if(dto.getBooksId() != null){
 
-        for(var idDto : dto.getBooksId()){
+            for(var idDto : dto.getBooksId()){
 
-            boolean next = false;
+                boolean next = false;
 
-            for(var book : entity.getBooks()){
+                for(var book : entity.getBooks()){
 
-                if(book.getId() == idDto){
-                    next = true;
-                    break;
+                    if(book.getId() == idDto){
+                        next = true;
+                        break;
+                    }
                 }
+
+                if(next) continue;
+
+                Optional<Book> book = bookRepository.findById(idDto);
+
+                if(book.isEmpty()) throw new BookNotFoundException(idDto);
+
+                entity.getBooks().add(book.get());
+
             }
 
-            if(next) continue;
+            if(dto.getBooksId().isEmpty()){
+                entity.setBooks(new ArrayList<>());
+            }
 
-            Optional<Book> book = bookRepository.findById(idDto);
-
-            if(book.isEmpty()) throw new BookNotFoundException(idDto);
-
-            entity.getBooks().add(book.get());
-
-        }
-
-        if(dto.getBooksId().isEmpty()){
-            entity.setBooks(new ArrayList<>());
         }
 
         return ResponseEntity.ok(new AuthorDTO(entity));

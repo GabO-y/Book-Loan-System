@@ -1,5 +1,6 @@
 package com.oliveira.gabriel.BookLoanSystem.Service;
 
+import com.oliveira.gabriel.BookLoanSystem.Dtos.LoginRequest;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.UserDTOResponseAdmin;
 import com.oliveira.gabriel.BookLoanSystem.Dtos.UserResponse;
 import com.oliveira.gabriel.BookLoanSystem.Models.Role;
@@ -12,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
@@ -61,6 +64,53 @@ public class UserService {
     public ResponseEntity<Page<UserDTOResponseAdmin>> listUsers(Pageable pageable){
         return ResponseEntity.ok(userRepository.findAll(pageable)
             .map(UserDTOResponseAdmin::new));
+    }
+
+    public ResponseEntity<String> edit(LoginRequest login, JwtAuthenticationToken token){
+
+        User user = userRepository.findById(UUID.fromString(token.getName())).orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND)
+        );
+
+        boolean username = false;
+        boolean password = false;
+
+        String oldUsername = "";
+
+        if(login.username() != null){
+            oldUsername = user.getUsername();
+            user.setUsername(login.username());
+            username = true;
+        }
+
+        if(login.password() != null){
+            user.setPassword(login.password());
+            password = true;
+        }
+
+        userRepository.save(user);
+
+        String message = "";
+
+        if(!username && !password){
+
+            message = "Nothing change";
+
+        }else{
+
+            message += "Changes: ";
+
+            if(username){
+                message += "username: " + oldUsername + " -> " + user.getUsername();
+            }
+
+            if(password){
+                message += message.equals("Changes: ") ? "password" : " | password";
+            }
+
+        }
+
+        return ResponseEntity.ok(message);
     }
 
 }

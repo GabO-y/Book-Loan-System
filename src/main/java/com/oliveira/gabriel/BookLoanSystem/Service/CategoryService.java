@@ -63,33 +63,40 @@ public class CategoryService {
         Category entity = opt.get();
 
         if(dto.getName() != null) entity.setName(dto.getName());
+
         if(dto.getDescription() != null) entity.setDescription(dto.getDescription());
 
-        for(var idDto : dto.getBooksId()){
+        if(dto.getBooksId() != null){
 
-            boolean next = false;
+            for(var idDto : dto.getBooksId()){
 
-            for(var book : entity.getBooks()){
+                boolean next = false;
 
-                if(book.getId() == idDto){
-                    next = true;
-                    break;
+                for(var book : entity.getBooks()){
+
+                    if(book.getId() == idDto){
+                        next = true;
+                        break;
+                    }
                 }
+
+                if(next) continue;
+
+                Optional<Book> book = bookRepository.findById(idDto);
+
+                if(book.isEmpty()) throw new BookNotFoundException(idDto);
+
+                entity.getBooks().add(book.get());
+
             }
 
-            if(next) continue;
-
-            Optional<Book> book = bookRepository.findById(idDto);
-
-            if(book.isEmpty()) throw new BookNotFoundException(idDto);
-
-            entity.getBooks().add(book.get());
+            if(dto.getBooksId().isEmpty()){
+                entity.setBooks(new ArrayList<>());
+            }
 
         }
 
-        if(dto.getBooksId().isEmpty()){
-            entity.setBooks(new ArrayList<>());
-        }
+
 
         return ResponseEntity.ok(new CategoryDTO(entity));
     }
